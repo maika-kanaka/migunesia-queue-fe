@@ -2,9 +2,9 @@ import { Routes, Route } from "react-router-dom";
 import Layout from "./components/Layout.jsx";
 import EventListPage from "./pages/EventListPage.jsx";
 import BoardPage from "./pages/BoardPage.jsx";
-import LoketDisplayPage from "./pages/LoketDisplayPage.jsx";
+import LoketDisplayRouter from "./router/LoketDisplayRouter.jsx";
 import LoketAdminPage from "./pages/LoketAdminPage.jsx";
-import MultiLoketDisplayPage from "./pages/MultiLoketDisplayPage";
+import MultiDisplayRouter from "./router/MultiLoketDisplayRouter.jsx";
 import { Box, Typography, Button } from "@mui/material";
 import { Link as RouterLink } from "react-router-dom";
 
@@ -29,7 +29,7 @@ export default function App() {
       />
       <Route
         path="/event/:eventId/loket/:loketId/display"
-        element={<LoketDisplayPage />}
+        element={<LoketDisplayRouter />}
       />
       <Route
         path="/loket/:loketId/admin"
@@ -41,7 +41,7 @@ export default function App() {
       />
       <Route
         path="/event/:eventId/display-all"
-        element={<MultiLoketDisplayPage />}
+        element={<MultiDisplayRouter />}
       />
       <Route
         path="*"

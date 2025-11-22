@@ -1,107 +1,11 @@
-import { useEffect, useState, useCallback, useRef } from "react";
 import { useParams } from "react-router-dom";
-import { apiGet, apiPost } from "../api";
 import { Box, Typography, Grid, Paper, Button } from "@mui/material";
-import { printThermalTicket } from "../utils/print";
-import speakQueue from "../utils/speak";
-import Swal from "sweetalert2";
+import useMultiLoketDisplay from "../hooks/useMultiLoketDisplay";
 
 export default function MultiLoketDisplayPage() {
   const { eventId } = useParams();
-  const [eventInfo, setEventInfo] = useState(null);
-  const [lokets, setLokets] = useState([]);
-  const [loadingLoketId, setLoadingLoketId] = useState(null);
-
-  // Simpan state sebelumnya per loket: { [loket_id]: { number, repeatAt } }
-  const prevStateRef = useRef({});
-
-  const loadState = useCallback(async () => {
-    if (!eventId) return;
-    try {
-      const [eventData, stateData] = await Promise.all([
-        apiGet(`/events/${eventId}`),
-        apiGet(`/events/${eventId}/state`),
-      ]);
-      setEventInfo(eventData);
-
-      const prev = prevStateRef.current || {};
-      const nextPrev = {};
-
-      stateData.forEach((l) => {
-        const newNum = l.current_number || 0;
-        const newRepeatAt = l.last_repeat_at || null; // << datang dari backend
-        const prevEntry = prev[l.loket_id] || {
-          number: null,
-          repeatAt: null,
-        };
-
-        // NEXT: jika current_number berubah (bukan pertama kali) → suara
-        if (
-          prevEntry.number !== null &&
-          newNum !== prevEntry.number &&
-          newNum > 0
-        ) {
-          speakQueue(l.loket_code, newNum, l.loket_name);
-        }
-
-        // REPEAT: jika last_repeat_at berubah (bukan pertama kali) → suara ulang
-        if (
-          prevEntry.repeatAt !== null &&
-          newRepeatAt &&
-          newRepeatAt !== prevEntry.repeatAt &&
-          newNum > 0
-        ) {
-          speakQueue(l.loket_code, newNum, l.loket_name);
-        }
-
-        nextPrev[l.loket_id] = {
-          number: newNum,
-          repeatAt: newRepeatAt,
-        };
-      });
-
-      prevStateRef.current = nextPrev;
-      setLokets(stateData);
-    } catch (err) {
-      console.error(err);
-    }
-  }, [eventId]);
-
-  useEffect(() => {
-    loadState();
-    const interval = setInterval(loadState, 2000);
-    return () => clearInterval(interval);
-  }, [loadState]);
-
-  const handleTakeTicket = async (loketId, loketCode) => {
-    if (!eventId) return;
-    setLoadingLoketId(loketId);
-    try {
-      const data = await apiPost(
-        `/events/${eventId}/lokets/${loketId}/tickets`,
-        {}
-      );
-      const { number, loket_name } = data;
-      const label = `${loketCode}${number}`;
-
-      printThermalTicket({
-        eventLabel: "",
-        loketLabel: loket_name,
-        ticketLabel: label,
-        footerNote: "Silakan tunggu panggilan di layar",
-        paperSize: "58mm", // ganti ke "80mm" kalau pakai kertas 80mm
-      });
-    } catch (err) {
-      console.error(err);
-      Swal.fire({
-        icon: "error",
-        title: "Failed",
-        text: "Gagal mengambil nomor antrian",
-      });
-    } finally {
-      setLoadingLoketId(null);
-    }
-  };
+  const { eventInfo, lokets, loadingLoketId, handleTakeTicket } =
+    useMultiLoketDisplay(eventId);
 
   return (
     <Box
@@ -126,6 +30,14 @@ export default function MultiLoketDisplayPage() {
           }}
         >
           {eventInfo ? eventInfo.name : `Event #${eventId}`}
+        </Typography>
+        <Typography
+          sx={{
+            fontSize: "2.5vmin",
+            opacity: 0.7,
+          }}
+        >
+          Display Semua Loket
         </Typography>
       </Box>
 
@@ -227,7 +139,9 @@ export default function MultiLoketDisplayPage() {
                   <Button
                     variant="contained"
                     color="secondary"
-                    onClick={() => handleTakeTicket(l.loket_id, l.loket_code)}
+                    onClick={() =>
+                      handleTakeTicket(l.loket_id, l.loket_code, l.loket_name)
+                    }
                     disabled={loadingLoketId === l.loket_id}
                     sx={{
                       mt: "1.5vmin",
