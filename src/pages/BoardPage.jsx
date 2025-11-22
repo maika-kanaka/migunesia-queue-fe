@@ -117,10 +117,16 @@ export default function BoardPage() {
   // ---- Reset loket ----
   const handleResetLoket = async (loket) => {
     if (!eventId) return;
-    const ok = window.confirm(
-      `Reset semua antrian di ${loket.loket_name} (${loket.loket_code})? Semua nomor akan dihapus dan kembali ke awal.`
-    );
-    if (!ok) return;
+    const result = await Swal.fire({
+      title: "Reset Antrian?",
+      text: `Reset semua antrian di ${loket.loket_name} (${loket.loket_code})? Semua nomor akan dihapus dan kembali ke awal.`,
+      icon: "warning",
+      showCancelButton: true,
+      confirmButtonText: "Ya, reset!",
+      cancelButtonText: "Batal",
+    });
+
+    if (!result.isConfirmed) return;
 
     try {
       await apiPost(`/events/${eventId}/lokets/${loket.loket_id}/reset`, {});
