@@ -1,4 +1,3 @@
-// src/hooks/useLoketDisplay.js
 import { useCallback, useEffect, useRef, useState } from "react";
 import { apiGet, apiPost } from "../api";
 import { printThermalTicket } from "../utils/print";
@@ -69,11 +68,11 @@ export default function useLoketDisplay({ eventId, loketId }) {
         `/events/${eventId}/lokets/${loketId}/tickets`,
         {}
       );
-      const { number, loket_code, loket_name } = data;
+      const { number, loket_code, loket_name, event_name } = data;
       const label = `${loket_code}${number}`;
 
       printThermalTicket({
-        eventLabel: "",
+        eventLabel: event_name,
         loketLabel: loket_name,
         ticketLabel: label,
         footerNote: "Silakan tunggu panggilan di layar",

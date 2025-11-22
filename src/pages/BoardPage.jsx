@@ -1,4 +1,3 @@
-// src/pages/BoardPage.jsx
 import { useEffect, useState, useCallback } from "react";
 import { useParams, Link as RouterLink } from "react-router-dom";
 import { apiGet, apiPost, apiPut, apiDelete } from "../api";
@@ -88,7 +87,7 @@ export default function BoardPage() {
       const data = await apiPost(
         `/events/${eventId}/lokets/${loketId}/tickets`
       );
-      const { number, loket_name } = data;
+      const { number, loket_name, event_name } = data;
       const label = `${loketCode}${number}`;
 
       Swal.fire({
@@ -98,7 +97,7 @@ export default function BoardPage() {
       });
 
       printThermalTicket({
-        eventLabel: "",
+        eventLabel: event_name,
         loketLabel: loket_name,
         ticketLabel: label,
         footerNote: "Silakan tunggu panggilan di layar",

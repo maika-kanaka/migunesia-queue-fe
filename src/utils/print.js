@@ -5,7 +5,6 @@ export function printThermalTicket({
   footerNote, // contoh: "Silakan tunggu panggilan di layar"
   paperSize = "58mm", // atau "80mm"
 }) {
-  console.log(eventLabel);
   const now = new Date();
   const dateStr = now.toLocaleDateString();
   const timeStr = now.toLocaleTimeString();
@@ -75,6 +74,10 @@ export function printThermalTicket({
       </head>
       <body>
         <div class="ticket">
+          <div class="event">${eventLabel || ""}</div>
+
+          <div class="divider"></div>
+
           <div class="loket">${loketLabel || ""}</div>
           <div class="label">NOMOR ANTRIAN</div>
           <div class="number">${ticketLabel}</div>

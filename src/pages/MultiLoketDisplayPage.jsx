@@ -31,14 +31,6 @@ export default function MultiLoketDisplayPage() {
         >
           {eventInfo ? eventInfo.name : `Event #${eventId}`}
         </Typography>
-        <Typography
-          sx={{
-            fontSize: "2.5vmin",
-            opacity: 0.7,
-          }}
-        >
-          Display Semua Loket
-        </Typography>
       </Box>
 
       {/* Grid Loket */}

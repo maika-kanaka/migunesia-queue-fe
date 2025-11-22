@@ -1,4 +1,3 @@
-// src/pages/LoketDisplayPage.jsx
 import { useParams } from "react-router-dom";
 import { Box, Typography, Button } from "@mui/material";
 import useLoketDisplay from "../hooks/useLoketDisplay";

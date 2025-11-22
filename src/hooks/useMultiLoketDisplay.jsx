@@ -79,13 +79,13 @@ export default function useMultiLoketDisplay(eventId) {
           `/events/${eventId}/lokets/${loketId}/tickets`,
           {}
         );
-        const { number, loket_name } = data;
+        const { number, loket_name, event_name } = data;
         const label = `${loketCode}${number}`;
         const printedLoketName =
           loket_name || loketName || `Loket ${loketCode}`;
 
         printThermalTicket({
-          eventLabel: "",
+          eventLabel: event_name,
           loketLabel: printedLoketName,
           ticketLabel: label,
           footerNote: "Silakan tunggu panggilan di layar",
