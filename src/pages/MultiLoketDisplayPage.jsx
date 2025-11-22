@@ -40,6 +40,8 @@ export default function MultiLoketDisplayPage() {
           spacing={2}
           sx={{
             height: "100%",
+            justifyContent: "space-evenly",
+            alignContent: "space-evenly",
           }}
         >
           {lokets.map((l) => {
