@@ -64,7 +64,7 @@ export default function MultiLoketDisplayPage() {
                     bgcolor: "rgba(255,255,255,0.04)",
                     color: "#fff",
                     borderRadius: 3,
-                    border: "1px solid rgba(255,255,255,0.08)",
+                    border: "1px solid rgba(255, 255, 255, 0.99)",
                     display: "flex",
                     flexDirection: "column",
                     alignItems: "center",
