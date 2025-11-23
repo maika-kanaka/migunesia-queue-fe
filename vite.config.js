@@ -6,6 +6,6 @@ const repoName = '/migunesia-queue-fe/' // Ganti dengan nama repositori Anda!
 
 // https://vitejs.dev/config/
 export default defineConfig({
-  base: process.env.NODE_ENV === 'production' ? repoName : '/',
+  base: repoName,
   plugins: [react()],
 })
