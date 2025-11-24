@@ -49,6 +49,15 @@ export default function MultiLoketDisplayPage() {
               ? `${l.loket_code}${l.current_number}`
               : "-";
 
+            // Hitung antrian selanjutnya
+            let nextLabel = "-";
+            if (l.queue_length > 0 && l.last_ticket_number) {
+              const nextNum = l.last_ticket_number - l.queue_length + 1;
+              if (nextNum > 0) {
+                nextLabel = `${l.loket_code}${nextNum}`;
+              }
+            }
+
             return (
               <Grid
                 item
@@ -57,7 +66,7 @@ export default function MultiLoketDisplayPage() {
                 md={4}
                 lg={3}
                 key={l.loket_id}
-                sx={{ height: { xs: "auto", md: "50%" } }}
+                sx={{ height: { xs: "auto" } }}
               >
                 <Paper
                   elevation={4}
@@ -91,7 +100,7 @@ export default function MultiLoketDisplayPage() {
                       mb: "1.5vmin",
                     }}
                   >
-                    Loket {l.loket_code}
+                    Kode: {l.loket_code}
                   </Typography>
 
                   <Typography
@@ -107,10 +116,21 @@ export default function MultiLoketDisplayPage() {
                       fontWeight: "bold",
                       lineHeight: 1,
                       fontSize: "8vmin",
-                      mb: "1.5vmin",
+                      mb: "1vmin",
                     }}
                   >
                     {currentLabel}
+                  </Typography>
+
+                  {/* Antrian selanjutnya */}
+                  <Typography
+                    sx={{
+                      fontSize: "2vmin",
+                      opacity: 0.9,
+                      mb: "1.5vmin",
+                    }}
+                  >
+                    Antrian selanjutnya: <strong>{nextLabel}</strong>
                   </Typography>
 
                   <Typography

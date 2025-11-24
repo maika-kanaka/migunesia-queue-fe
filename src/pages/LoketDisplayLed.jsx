@@ -1,11 +1,11 @@
 import { useParams } from "react-router-dom";
 import { Box, Typography, Button } from "@mui/material";
-import useLoketDisplay from "../hooks/useLoketDisplay";
+import useLoketDisplayLed from "../hooks/useLoketDisplayLed";
 
-export default function LoketDisplayPage() {
+export default function LoketDisplayLedPage() {
   const { eventId, loketId } = useParams();
 
-  const { loket, taking, handleTakeTicket } = useLoketDisplay({
+  const { loket } = useLoketDisplayLed({
     eventId,
     loketId,
   });
@@ -32,8 +32,6 @@ export default function LoketDisplayPage() {
   const currentLabel = loket.current_number
     ? `${loket.loket_code}${loket.current_number}`
     : "-";
-
-  console.log("loket", loket);
 
   // Hitung antrian selanjutnya
   let nextLabel = "-";
@@ -102,26 +100,6 @@ export default function LoketDisplayPage() {
       >
         Menunggu: {loket.queue_length}
       </Typography>
-
-      {/* Tombol Ambil Nomor */}
-      <Button
-        variant="contained"
-        color="secondary"
-        onClick={handleTakeTicket}
-        disabled={taking}
-        sx={{
-          mt: "6vmin",
-          fontWeight: "bold",
-          borderRadius: "999px",
-          textTransform: "none",
-          fontSize: "4vmin",
-          px: "8vmin",
-          py: "2vmin",
-          boxShadow: 6,
-        }}
-      >
-        {taking ? "Memproses..." : "AMBIL NOMOR"}
-      </Button>
     </Box>
   );
 }

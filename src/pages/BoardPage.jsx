@@ -17,6 +17,10 @@ import {
   DialogTitle,
   DialogContent,
   DialogActions,
+  FormControlLabel,
+  FormGroup,
+  Checkbox,
+  CardHeader,
 } from "@mui/material";
 import EditIcon from "@mui/icons-material/Edit";
 import DeleteIcon from "@mui/icons-material/Delete";
@@ -28,7 +32,18 @@ export default function BoardPage() {
   const [lokets, setLokets] = useState([]);
   const [newLoketName, setNewLoketName] = useState("");
   const [newLoketCode, setNewLoketCode] = useState("");
+  const [newLoketDescription, setNewLoketDescription] = useState("");
   const [creatingLoket, setCreatingLoket] = useState(false);
+
+  // Config sound source
+  const [soundConfig, setSoundConfig] = useState({
+    multi_display: true,
+    loket_display: true,
+    loket_display_led: false,
+    loket_admin: false,
+  });
+
+  const [loadingSound, setLoadingSound] = useState(false);
 
   // search loket
   const [searchLoket, setSearchLoket] = useState("");
@@ -38,9 +53,37 @@ export default function BoardPage() {
   const [selectedLoket, setSelectedLoket] = useState(null);
   const [editLoketName, setEditLoketName] = useState("");
   const [editLoketCode, setEditLoketCode] = useState("");
+  const [editLoketDescription, setEditLoketDescription] = useState("");
 
   // delete loket dialog
   const [deleteOpen, setDeleteOpen] = useState(false);
+
+  useEffect(() => {
+    if (!eventId) return;
+
+    const loadSoundConfig = async () => {
+      try {
+        const [multi, single, led, admin] = await Promise.all([
+          apiGet(`/events/${eventId}/sound-config?role=multi_display`),
+          apiGet(`/events/${eventId}/sound-config?role=loket_display`),
+          apiGet(`/events/${eventId}/sound-config?role=loket_display_led`),
+          apiGet(`/events/${eventId}/sound-config?role=loket_admin`),
+        ]);
+
+        setSoundConfig({
+          multi_display: !!multi.enabled,
+          loket_display: !!single.enabled,
+          loket_display_led: !!led.enabled,
+          loket_admin: !!admin.enabled,
+        });
+      } catch (err) {
+        console.error(err);
+        // kalau gagal, biarin default saja
+      }
+    };
+
+    loadSoundConfig();
+  }, [eventId]);
 
   const loadState = useCallback(async () => {
     if (!eventId) return;
@@ -66,9 +109,11 @@ export default function BoardPage() {
       await apiPost(`/events/${eventId}/lokets`, {
         name: newLoketName,
         code: newLoketCode,
+        description: newLoketDescription,
       });
       setNewLoketName("");
       setNewLoketCode("");
+      setNewLoketDescription("");
       loadState();
     } catch (err) {
       Swal.fire({
@@ -87,7 +132,7 @@ export default function BoardPage() {
       const data = await apiPost(
         `/events/${eventId}/lokets/${loketId}/tickets`
       );
-      const { number, loket_name, event_name } = data;
+      const { number, loket_name, loket_description, event_name } = data;
       const label = `${loketCode}${number}`;
 
       Swal.fire({
@@ -99,6 +144,7 @@ export default function BoardPage() {
       printThermalTicket({
         eventLabel: event_name,
         loketLabel: loket_name,
+        loketDescription: loket_description || "",
         ticketLabel: label,
         footerNote: "Silakan tunggu panggilan di layar",
         paperSize: "58mm", // ganti ke "80mm" kalau pakai kertas 80mm
@@ -149,6 +195,7 @@ export default function BoardPage() {
     setSelectedLoket(loket);
     setEditLoketName(loket.loket_name);
     setEditLoketCode(loket.loket_code);
+    setEditLoketDescription(loket.loket_description || "");
     setEditOpen(true);
   };
 
@@ -163,6 +210,7 @@ export default function BoardPage() {
       await apiPut(`/events/${eventId}/lokets/${selectedLoket.loket_id}`, {
         name: editLoketName,
         code: editLoketCode,
+        description: editLoketDescription,
       });
       handleCloseEditLoket();
       loadState();
@@ -201,6 +249,30 @@ export default function BoardPage() {
     }
   };
 
+  const handleSaveSoundConfig = async () => {
+    if (!eventId) return;
+    setLoadingSound(true);
+    try {
+      await apiPut(`/events/${eventId}/sound-config`, soundConfig);
+      Swal.fire({
+        icon: "success",
+        title: "Berhasil",
+        text: "Pengaturan suara berhasil disimpan.",
+        timer: 1500,
+        showConfirmButton: false,
+      });
+    } catch (err) {
+      console.error(err);
+      Swal.fire({
+        icon: "error",
+        title: "Gagal",
+        text: "Gagal menyimpan pengaturan suara.",
+      });
+    } finally {
+      setLoadingSound(false);
+    }
+  };
+
   // Filter loket
   const filteredLokets = lokets.filter((l) => {
     if (!searchLoket) return true;
@@ -217,51 +289,152 @@ export default function BoardPage() {
         Board Event #{eventId}
       </Typography>
 
-      {/* Form tambah loket */}
       <Box
-        component="form"
-        onSubmit={handleCreateLoket}
         sx={{
+          display: "flex",
+          justifyContent: "space-between",
+          flexWrap: "wrap",
+          flexDirection: { xs: "column", md: "row" },
+          gap: 2,
           mb: 4,
-          p: 2,
-          bgcolor: "background.paper",
-          borderRadius: 2,
-          boxShadow: 1,
         }}
       >
-        <Typography variant="h6" gutterBottom>
-          Tambah Loket
-        </Typography>
-        <Grid container spacing={2}>
-          <Grid item xs={12} md={5}>
-            <TextField
-              label="Nama Loket (mis: Loket A)"
-              fullWidth
-              value={newLoketName}
-              onChange={(e) => setNewLoketName(e.target.value)}
-            />
+        {/* Form tambah loket */}
+        <Box
+          component="form"
+          onSubmit={handleCreateLoket}
+          sx={{
+            mb: 4,
+            p: 2,
+            bgcolor: "background.paper",
+            borderRadius: 2,
+            boxShadow: 1,
+            flex: "1",
+          }}
+        >
+          <Typography variant="h6" gutterBottom>
+            Tambah Loket
+          </Typography>
+          <Grid container spacing={2} sx={{ flexDirection: "column" }}>
+            <Grid item xs={12} md={5}>
+              <TextField
+                label="Nama Loket (mis: Loket A)"
+                fullWidth
+                value={newLoketName}
+                onChange={(e) => setNewLoketName(e.target.value)}
+              />
+            </Grid>
+            <Grid item xs={12} md={3}>
+              <TextField
+                label="Kode (mis: A)"
+                fullWidth
+                value={newLoketCode}
+                onChange={(e) => setNewLoketCode(e.target.value)}
+              />
+            </Grid>
+            <Grid item xs={12} md={3}>
+              <TextField
+                label="Deskripsi (opsional)"
+                multiline
+                minRows={3}
+                fullWidth
+                value={newLoketDescription}
+                onChange={(e) => setNewLoketDescription(e.target.value)}
+              />
+            </Grid>
+            <Grid item xs={12} md={4} display="flex" alignItems="center">
+              <Button
+                type="submit"
+                variant="contained"
+                fullWidth
+                disabled={creatingLoket}
+              >
+                {creatingLoket ? "Menyimpan..." : "Simpan Loket"}
+              </Button>
+            </Grid>
           </Grid>
-          <Grid item xs={12} md={3}>
-            <TextField
-              label="Kode (mis: A)"
-              fullWidth
-              value={newLoketCode}
-              onChange={(e) => setNewLoketCode(e.target.value)}
-            />
-          </Grid>
-          <Grid item xs={12} md={4} display="flex" alignItems="center">
-            <Button
-              type="submit"
-              variant="contained"
-              fullWidth
-              disabled={creatingLoket}
-            >
-              {creatingLoket ? "Menyimpan..." : "Simpan Loket"}
-            </Button>
-          </Grid>
-        </Grid>
-      </Box>
+        </Box>
 
+        {/* Pengaturan sumber suara */}
+        <Box sx={{ flex: "1" }}>
+          <Card sx={{ mb: 3 }}>
+            <CardHeader
+              title="Pengaturan Sumber Suara"
+              subheader="Pilih dari perangkat mana suara panggilan antrian akan keluar."
+            />
+            <CardContent>
+              <FormGroup>
+                <FormControlLabel
+                  control={
+                    <Checkbox
+                      checked={soundConfig.multi_display}
+                      onChange={(e) =>
+                        setSoundConfig((prev) => ({
+                          ...prev,
+                          multi_display: e.target.checked,
+                        }))
+                      }
+                    />
+                  }
+                  label="TV Display Semua Loket (multi display)"
+                />
+                <FormControlLabel
+                  control={
+                    <Checkbox
+                      checked={soundConfig.loket_display}
+                      onChange={(e) =>
+                        setSoundConfig((prev) => ({
+                          ...prev,
+                          loket_display: e.target.checked,
+                        }))
+                      }
+                    />
+                  }
+                  label="Display Per Loket"
+                />
+                <FormControlLabel
+                  control={
+                    <Checkbox
+                      checked={soundConfig.loket_display_led}
+                      onChange={(e) =>
+                        setSoundConfig((prev) => ({
+                          ...prev,
+                          loket_display_led: e.target.checked,
+                        }))
+                      }
+                    />
+                  }
+                  label="Display Led"
+                />
+                <FormControlLabel
+                  control={
+                    <Checkbox
+                      checked={soundConfig.loket_admin}
+                      onChange={(e) =>
+                        setSoundConfig((prev) => ({
+                          ...prev,
+                          loket_admin: e.target.checked,
+                        }))
+                      }
+                    />
+                  }
+                  label="Laptop / Halaman Admin Loket"
+                />
+              </FormGroup>
+
+              <Box sx={{ mt: 2 }}>
+                <Button
+                  variant="contained"
+                  onClick={handleSaveSoundConfig}
+                  disabled={loadingSound}
+                >
+                  {loadingSound ? "Menyimpan..." : "Simpan Pengaturan Suara"}
+                </Button>
+              </Box>
+            </CardContent>
+          </Card>
+        </Box>
+      </Box>
       {/* Search loket */}
       <Box
         sx={{
@@ -325,6 +498,8 @@ export default function BoardPage() {
                     height: "100%",
                     display: "flex",
                     flexDirection: "column",
+                    width: "250px",
+                    maxWidth: "250px",
                   }}
                 >
                   <CardContent sx={{ flexGrow: 1 }}>
@@ -383,6 +558,13 @@ export default function BoardPage() {
                       <Typography variant="body2">
                         Tiket terakhir: <strong>{l.last_ticket_number}</strong>
                       </Typography>
+                      <Typography
+                        variant="body2"
+                        sx={{ marginTop: "10px", whiteSpace: "pre-line" }}
+                      >
+                        Deskripsi: <br />
+                        <strong>{l.loket_description}</strong>
+                      </Typography>
                     </Box>
                   </CardContent>
                   <CardActions sx={{ flexDirection: "column", gap: 1, p: 2 }}>
@@ -396,6 +578,15 @@ export default function BoardPage() {
                     </Button>
                     <Button
                       component={RouterLink}
+                      to={`/event/${eventId}/loket/${l.loket_id}/display/led`}
+                      target="_blank"
+                      variant="outlined"
+                      fullWidth
+                    >
+                      Display Led
+                    </Button>
+                    <Button
+                      component={RouterLink}
                       to={`/event/${eventId}/loket/${l.loket_id}/display`}
                       target="_blank"
                       variant="outlined"
@@ -405,7 +596,7 @@ export default function BoardPage() {
                     </Button>
                     <Button
                       component={RouterLink}
-                      to={`/loket/${l.loket_id}/admin`}
+                      to={`/event/${eventId}/loket/${l.loket_id}/admin`}
                       target="_blank"
                       variant="outlined"
                       fullWidth
@@ -429,9 +620,9 @@ export default function BoardPage() {
       </Grid>
 
       <Typography variant="body2" color="text.secondary" mt={2}>
-        Buka link Display di setiap TV untuk menampilkan antrian, dan link Admin
-        di komputer petugas untuk memanggil NEXT. Gunakan tombol Reset untuk
-        mengembalikan antrian ke awal saat testing.
+        Buka link Display Led di setiap TV untuk menampilkan antrian, dan link
+        Admin di komputer petugas untuk memanggil NEXT. Gunakan tombol Reset
+        untuk mengembalikan antrian ke awal saat testing.
       </Typography>
 
       {/* Dialog Edit Loket */}
@@ -455,6 +646,14 @@ export default function BoardPage() {
               fullWidth
               value={editLoketCode}
               onChange={(e) => setEditLoketCode(e.target.value)}
+            />
+            <TextField
+              label="Deskripsi (opsional)"
+              multiline
+              minRows={3}
+              fullWidth
+              value={editLoketDescription}
+              onChange={(e) => setEditLoketDescription(e.target.value)}
             />
           </Stack>
         </DialogContent>

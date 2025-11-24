@@ -8,9 +8,27 @@ export default function useMultiLoketDisplay(eventId) {
   const [eventInfo, setEventInfo] = useState(null);
   const [lokets, setLokets] = useState([]);
   const [loadingLoketId, setLoadingLoketId] = useState(null);
+  const [voiceEnabled, setVoiceEnabled] = useState(true);
 
   // Simpan state sebelumnya per loket: { [loket_id]: { number, repeatAt } }
   const prevStateRef = useRef({});
+
+  // load config sumber suara untuk multi display
+  useEffect(() => {
+    if (!eventId) return;
+    const loadConfig = async () => {
+      try {
+        const config = await apiGet(
+          `/events/${eventId}/sound-config?role=multi_display`
+        );
+        setVoiceEnabled(config.enabled);
+      } catch (err) {
+        console.error(err);
+        // kalau API error, biarin default (true) atau set false sesuai keinginan
+      }
+    };
+    loadConfig();
+  }, [eventId]);
 
   const loadState = useCallback(async () => {
     if (!eventId) return;
@@ -32,23 +50,26 @@ export default function useMultiLoketDisplay(eventId) {
           repeatAt: null,
         };
 
-        // NEXT: jika current_number berubah (bukan pertama kali) → suara
-        if (
-          prevEntry.number !== null &&
-          newNum !== prevEntry.number &&
-          newNum > 0
-        ) {
-          speakQueue(l.loket_code, newNum, l.loket_name);
-        }
+        // hanya bicara kalau voiceEnabled = true
+        if (voiceEnabled) {
+          // NEXT: jika current_number berubah (bukan pertama kali) → suara
+          if (
+            prevEntry.number !== null &&
+            newNum !== prevEntry.number &&
+            newNum > 0
+          ) {
+            speakQueue(l.loket_code, newNum, l.loket_name);
+          }
 
-        // REPEAT: jika last_repeat_at berubah (bukan pertama kali) → suara ulang
-        if (
-          prevEntry.repeatAt !== null &&
-          newRepeatAt &&
-          newRepeatAt !== prevEntry.repeatAt &&
-          newNum > 0
-        ) {
-          speakQueue(l.loket_code, newNum, l.loket_name);
+          // REPEAT: jika last_repeat_at berubah (bukan pertama kali) → suara ulang
+          if (
+            prevEntry.repeatAt !== null &&
+            newRepeatAt &&
+            newRepeatAt !== prevEntry.repeatAt &&
+            newNum > 0
+          ) {
+            speakQueue(l.loket_code, newNum, l.loket_name);
+          }
         }
 
         nextPrev[l.loket_id] = {
@@ -62,7 +83,7 @@ export default function useMultiLoketDisplay(eventId) {
     } catch (err) {
       console.error(err);
     }
-  }, [eventId]);
+  }, [eventId, voiceEnabled]);
 
   useEffect(() => {
     loadState();
@@ -79,7 +100,7 @@ export default function useMultiLoketDisplay(eventId) {
           `/events/${eventId}/lokets/${loketId}/tickets`,
           {}
         );
-        const { number, loket_name, event_name } = data;
+        const { number, loket_name, loket_description, event_name } = data;
         const label = `${loketCode}${number}`;
         const printedLoketName =
           loket_name || loketName || `Loket ${loketCode}`;
@@ -87,6 +108,7 @@ export default function useMultiLoketDisplay(eventId) {
         printThermalTicket({
           eventLabel: event_name,
           loketLabel: printedLoketName,
+          loketDescription: loket_description || "",
           ticketLabel: label,
           footerNote: "Silakan tunggu panggilan di layar",
           paperSize: "58mm", // ganti ke "80mm" kalau pakai kertas 80mm

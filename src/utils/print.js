@@ -1,6 +1,7 @@
 export function printThermalTicket({
   eventLabel, // contoh: "Event: Grand Opening Mall"
   loketLabel, // contoh: "Loket A"
+  loketDescription, // contoh: "Deskripsi loket"
   ticketLabel, // contoh: "A023"
   footerNote, // contoh: "Silakan tunggu panggilan di layar"
   paperSize = "58mm", // atau "80mm"
@@ -57,6 +58,10 @@ export function printThermalTicket({
             font-size: 10px;
             margin-top: 4px;
           }
+          .loket-description {
+            white-space: pre-line;
+            font-size: 8px;
+          }
           .number {
             font-size: 40px;
             font-weight: 700;
@@ -79,6 +84,7 @@ export function printThermalTicket({
           <div class="divider"></div>
 
           <div class="loket">${loketLabel || ""}</div>
+          <div class="loket-description">${loketDescription || ""}</div>
           <div class="label">NOMOR ANTRIAN</div>
           <div class="number">${ticketLabel}</div>
 

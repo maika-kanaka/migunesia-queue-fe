@@ -3,6 +3,7 @@ import Layout from "./components/Layout.jsx";
 import EventListPage from "./pages/EventListPage.jsx";
 import BoardPage from "./pages/BoardPage.jsx";
 import LoketDisplayRouter from "./router/LoketDisplayRouter.jsx";
+import LoketDisplayLedRouter from "./router/LoketDisplayLedRouter.jsx";
 import LoketAdminPage from "./pages/LoketAdminPage.jsx";
 import MultiDisplayRouter from "./router/MultiLoketDisplayRouter.jsx";
 import { Box, Typography, Button } from "@mui/material";
@@ -32,7 +33,11 @@ export default function App() {
         element={<LoketDisplayRouter />}
       />
       <Route
-        path="/loket/:loketId/admin"
+        path="/event/:eventId/loket/:loketId/display/led"
+        element={<LoketDisplayLedRouter />}
+      />
+      <Route
+        path="/event/:eventId/loket/:loketId/admin"
         element={
           <Layout>
             <LoketAdminPage />

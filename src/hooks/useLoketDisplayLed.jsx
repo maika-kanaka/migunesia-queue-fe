@@ -1,11 +1,9 @@
 import { useCallback, useEffect, useRef, useState } from "react";
-import { apiGet, apiPost } from "../api";
-import { printThermalTicket } from "../utils/print";
+import { apiGet } from "../api";
 import speakQueue from "../utils/speak";
 
-export default function useLoketDisplay({ eventId, loketId }) {
+export default function useLoketDisplayLed({ eventId, loketId }) {
   const [loket, setLoket] = useState(null);
-  const [taking, setTaking] = useState(false);
   const [voiceEnabled, setVoiceEnabled] = useState(true);
 
   // Simpan state sebelumnya: { number, repeatAt }
@@ -19,7 +17,7 @@ export default function useLoketDisplay({ eventId, loketId }) {
     const loadConfig = async () => {
       try {
         const config = await apiGet(
-          `/events/${eventId}/sound-config?role=loket_display`
+          `/events/${eventId}/sound-config?role=loket_display_led`
         );
         setVoiceEnabled(config.enabled);
       } catch (err) {
@@ -38,7 +36,6 @@ export default function useLoketDisplay({ eventId, loketId }) {
       const repeatAt = data.last_repeat_at || null;
 
       const { number: prevNumber, repeatAt: prevRepeatAt } = prevRef.current;
-
       // hanya bicara kalau voiceEnabled = true
       if (voiceEnabled) {
         // NEXT: current_number berubah → bicara
@@ -74,41 +71,18 @@ export default function useLoketDisplay({ eventId, loketId }) {
 
   useEffect(() => {
     if (!loketId) return;
-    loadInfo();
+    // Defer the initial load to avoid calling setState synchronously within the effect
+    const initial = setTimeout(() => {
+      loadInfo();
+    }, 0);
     const interval = setInterval(loadInfo, 2000);
-    return () => clearInterval(interval);
+    return () => {
+      clearTimeout(initial);
+      clearInterval(interval);
+    };
   }, [loadInfo, loketId]);
-
-  const handleTakeTicket = useCallback(async () => {
-    if (!eventId || !loketId) return;
-    setTaking(true);
-    try {
-      const data = await apiPost(
-        `/events/${eventId}/lokets/${loketId}/tickets`,
-        {}
-      );
-      const { number, loket_code, loket_name, loket_description, event_name } =
-        data;
-      const label = `${loket_code}${number}`;
-
-      printThermalTicket({
-        eventLabel: event_name,
-        loketLabel: loket_name,
-        loketDescription: loket_description || "",
-        ticketLabel: label,
-        footerNote: "Silakan tunggu panggilan di layar",
-        paperSize: "58mm", // ganti ke "80mm" kalau pakai kertas 80mm
-      });
-    } catch (err) {
-      console.error(err);
-    } finally {
-      setTaking(false);
-    }
-  }, [eventId, loketId]);
 
   return {
     loket,
-    taking,
-    handleTakeTicket,
   };
 }
