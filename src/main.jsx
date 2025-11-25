@@ -9,7 +9,7 @@ ReactDOM.createRoot(document.getElementById("root")).render(
   <React.StrictMode>
     <ThemeProvider theme={theme}>
       <CssBaseline />
-      <BrowserRouter basename="/migunesia-queue-api">
+      <BrowserRouter basename="/migunesia-queue-fe">
         <App />
       </BrowserRouter>
     </ThemeProvider>
