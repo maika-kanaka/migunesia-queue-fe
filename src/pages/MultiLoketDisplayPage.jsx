@@ -1,6 +1,7 @@
 import { useParams } from "react-router-dom";
 import { Box, Typography, Grid, Paper, Button } from "@mui/material";
 import useMultiLoketDisplay from "../hooks/useMultiLoketDisplay";
+import BGImage from "../../public/images/background-multi-display.jpeg";
 
 export default function MultiLoketDisplayPage() {
   const { eventId } = useParams();
@@ -12,7 +13,7 @@ export default function MultiLoketDisplayPage() {
       sx={{
         height: "100vh",
         width: "100vw",
-        backgroundImage: 'url("/images/background-multi-display.jpeg")',
+        backgroundImage: `url(${BGImage})`,
         backgroundSize: "cover",
         backgroundPosition: "center",
         backgroundRepeat: "no-repeat",
