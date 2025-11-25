@@ -6,6 +6,7 @@ import LoketDisplayRouter from "./router/LoketDisplayRouter.jsx";
 import LoketDisplayLedRouter from "./router/LoketDisplayLedRouter.jsx";
 import LoketAdminPage from "./pages/LoketAdminPage.jsx";
 import MultiDisplayRouter from "./router/MultiLoketDisplayRouter.jsx";
+import MultiDisplayLedRouter from "./router/MultiLoketDisplayLedRouter.jsx";
 import { Box, Typography, Button } from "@mui/material";
 import { Link as RouterLink } from "react-router-dom";
 
@@ -47,6 +48,10 @@ export default function App() {
       <Route
         path="/event/:eventId/display-all"
         element={<MultiDisplayRouter />}
+      />
+      <Route
+        path="/event/:eventId/display-led-all"
+        element={<MultiDisplayLedRouter />}
       />
       <Route
         path="*"

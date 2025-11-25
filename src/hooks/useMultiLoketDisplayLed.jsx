@@ -1,13 +1,10 @@
 import { useCallback, useEffect, useRef, useState } from "react";
-import { apiGet, apiPost } from "../api";
-import { printThermalTicket } from "../utils/print";
+import { apiGet } from "../api";
 import speakQueue from "../utils/speak";
-import Swal from "sweetalert2";
 
-export default function useMultiLoketDisplay(eventId) {
+export default function useMultiLoketDisplayLed(eventId) {
   const [eventInfo, setEventInfo] = useState(null);
   const [lokets, setLokets] = useState([]);
-  const [loadingLoketId, setLoadingLoketId] = useState(null);
   const [voiceEnabled, setVoiceEnabled] = useState(true);
 
   // Simpan state sebelumnya per loket: { [loket_id]: { number, repeatAt } }
@@ -19,7 +16,7 @@ export default function useMultiLoketDisplay(eventId) {
     const loadConfig = async () => {
       try {
         const config = await apiGet(
-          `/events/${eventId}/sound-config?role=multi_display`
+          `/events/${eventId}/sound-config?role=multi_display_led`
         );
         setVoiceEnabled(config.enabled);
       } catch (err) {
@@ -86,51 +83,19 @@ export default function useMultiLoketDisplay(eventId) {
   }, [eventId, voiceEnabled]);
 
   useEffect(() => {
-    loadState();
+    // Defer the initial load to avoid calling setState synchronously within the effect
+    const initial = setTimeout(() => {
+      loadState();
+    }, 0);
     const interval = setInterval(loadState, 2000);
-    return () => clearInterval(interval);
+    return () => {
+      clearTimeout(initial);
+      clearInterval(interval);
+    };
   }, [loadState]);
-
-  const handleTakeTicket = useCallback(
-    async (loketId, loketCode, loketName) => {
-      if (!eventId) return;
-      setLoadingLoketId(loketId);
-      try {
-        const data = await apiPost(
-          `/events/${eventId}/lokets/${loketId}/tickets`,
-          {}
-        );
-        const { number, loket_name, loket_description, event_name } = data;
-        const label = `${loketCode}${number}`;
-        const printedLoketName =
-          loket_name || loketName || `Loket ${loketCode}`;
-
-        printThermalTicket({
-          eventLabel: event_name,
-          loketLabel: printedLoketName,
-          loketDescription: loket_description || "",
-          ticketLabel: label,
-          footerNote: "Silakan tunggu panggilan di layar",
-          paperSize: "65mm", // ganti ke "80mm" kalau pakai kertas 80mm
-        });
-      } catch (err) {
-        console.error(err);
-        Swal.fire({
-          icon: "error",
-          title: "Failed",
-          text: "Gagal mengambil nomor antrian",
-        });
-      } finally {
-        setLoadingLoketId(null);
-      }
-    },
-    [eventId]
-  );
 
   return {
     eventInfo,
     lokets,
-    loadingLoketId,
-    handleTakeTicket,
   };
 }

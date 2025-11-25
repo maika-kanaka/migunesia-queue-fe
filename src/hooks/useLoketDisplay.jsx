@@ -97,7 +97,7 @@ export default function useLoketDisplay({ eventId, loketId }) {
         loketDescription: loket_description || "",
         ticketLabel: label,
         footerNote: "Silakan tunggu panggilan di layar",
-        paperSize: "58mm", // ganti ke "80mm" kalau pakai kertas 80mm
+        paperSize: "65mm", // ganti ke "80mm" kalau pakai kertas 80mm
       });
     } catch (err) {
       console.error(err);

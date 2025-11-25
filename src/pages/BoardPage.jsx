@@ -38,6 +38,7 @@ export default function BoardPage() {
   // Config sound source
   const [soundConfig, setSoundConfig] = useState({
     multi_display: true,
+    multi_display_led: true,
     loket_display: true,
     loket_display_led: false,
     loket_admin: false,
@@ -63,8 +64,9 @@ export default function BoardPage() {
 
     const loadSoundConfig = async () => {
       try {
-        const [multi, single, led, admin] = await Promise.all([
+        const [multi, multi_led, single, led, admin] = await Promise.all([
           apiGet(`/events/${eventId}/sound-config?role=multi_display`),
+          apiGet(`/events/${eventId}/sound-config?role=multi_display_led`),
           apiGet(`/events/${eventId}/sound-config?role=loket_display`),
           apiGet(`/events/${eventId}/sound-config?role=loket_display_led`),
           apiGet(`/events/${eventId}/sound-config?role=loket_admin`),
@@ -72,6 +74,7 @@ export default function BoardPage() {
 
         setSoundConfig({
           multi_display: !!multi.enabled,
+          multi_display_led: !!multi_led.enabled,
           loket_display: !!single.enabled,
           loket_display_led: !!led.enabled,
           loket_admin: !!admin.enabled,
@@ -147,7 +150,7 @@ export default function BoardPage() {
         loketDescription: loket_description || "",
         ticketLabel: label,
         footerNote: "Silakan tunggu panggilan di layar",
-        paperSize: "58mm", // ganti ke "80mm" kalau pakai kertas 80mm
+        paperSize: "65mm", // ganti ke "80mm" kalau pakai kertas 80mm
       });
     } catch (err) {
       console.error(err);
@@ -381,6 +384,20 @@ export default function BoardPage() {
                 <FormControlLabel
                   control={
                     <Checkbox
+                      checked={soundConfig.multi_display_led}
+                      onChange={(e) =>
+                        setSoundConfig((prev) => ({
+                          ...prev,
+                          multi_display_led: e.target.checked,
+                        }))
+                      }
+                    />
+                  }
+                  label="TV Display LED Semua Loket (multi display led)"
+                />
+                <FormControlLabel
+                  control={
+                    <Checkbox
                       checked={soundConfig.loket_display}
                       onChange={(e) =>
                         setSoundConfig((prev) => ({
@@ -404,7 +421,7 @@ export default function BoardPage() {
                       }
                     />
                   }
-                  label="Display Led"
+                  label="Display Led Per Loket"
                 />
                 <FormControlLabel
                   control={
@@ -460,6 +477,8 @@ export default function BoardPage() {
         sx={{
           mb: 2,
           display: "flex",
+          gap: 2,
+          flexWrap: "wrap",
         }}
       >
         <Button
@@ -470,6 +489,15 @@ export default function BoardPage() {
           size="small"
         >
           Buka Display Semua Loket
+        </Button>
+        <Button
+          component={RouterLink}
+          to={`/event/${eventId}/display-led-all`}
+          target="_blank"
+          variant="outlined"
+          size="small"
+        >
+          Buka Display Led Semua Loket
         </Button>
       </Box>
 
@@ -492,14 +520,24 @@ export default function BoardPage() {
               ? `${l.loket_code}${l.current_number}`
               : "-";
             return (
-              <Grid item xs={12} sm={6} md={4} lg={3} key={l.loket_id}>
+              <Grid
+                item
+                xs={12}
+                sm={6}
+                md={4}
+                lg={3}
+                key={l.loket_id}
+                sx={{
+                  minWidth: { xs: "100%", sm: "250px" },
+                }}
+              >
                 <Card
                   sx={{
                     height: "100%",
                     display: "flex",
                     flexDirection: "column",
-                    width: "250px",
-                    maxWidth: "250px",
+                    width: { xs: "100%", sm: "250px" },
+                    maxWidth: { xs: "100%", sm: "250px" },
                   }}
                 >
                   <CardContent sx={{ flexGrow: 1 }}>

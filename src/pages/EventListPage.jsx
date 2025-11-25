@@ -154,15 +154,18 @@ export default function EventListPage() {
           bgcolor: "background.paper",
           borderRadius: 2,
           boxShadow: 1,
+          maxWidth: "450px",
         }}
       >
         <Typography variant="h6" gutterBottom>
           Buat Event Baru
         </Typography>
-        <Grid container spacing={2}>
+        <Grid container spacing={2} sx={{ flexDirection: "column" }}>
           <Grid item xs={12} md={5}>
             <TextField
               label="Nama Event"
+              multiline
+              minRows={3}
               fullWidth
               value={name}
               onChange={(e) => setName(e.target.value)}
@@ -226,6 +229,7 @@ export default function EventListPage() {
                   height: "100%",
                   display: "flex",
                   flexDirection: "column",
+                  maxWidth: "450px",
                 }}
               >
                 <CardContent sx={{ flexGrow: 1 }}>
@@ -236,7 +240,9 @@ export default function EventListPage() {
                     justifyContent="space-between"
                   >
                     <Box>
-                      <Typography variant="h6">{ev.name}</Typography>
+                      <Typography sx={{ whiteSpace: "pre-line" }} variant="h6">
+                        {ev.name}
+                      </Typography>
                       <Typography color="text.secondary">
                         Kode: {ev.code}
                       </Typography>
@@ -283,6 +289,8 @@ export default function EventListPage() {
           <Stack spacing={2} sx={{ mt: 1 }}>
             <TextField
               label="Nama Event"
+              multiline
+              minRows={3}
               fullWidth
               value={editName}
               onChange={(e) => setEditName(e.target.value)}

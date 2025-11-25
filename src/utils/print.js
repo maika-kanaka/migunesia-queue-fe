@@ -39,11 +39,15 @@ export function printThermalTicket({
             margin-bottom: 2px;
           }
           .event {
+            width: ${paperSize};
+            margin: 0 auto;
+            text-align: center;
             font-size: 11px;
             margin-bottom: 4px;
-            white-space: nowrap;
-            overflow: hidden;
-            text-overflow: ellipsis;
+            white-space: pre-line;
+            word-wrap: break-word;
+            word-break: break-word;
+            display: block;
           }
           .divider {
             border-top: 1px dashed #000;
