@@ -71,6 +71,18 @@ export default function LoketDisplayPage() {
         {loket.loket_name}
       </Typography>
 
+      {/* Description Loket */}
+      <Typography
+        sx={{
+          fontSize: "3vmin",
+          fontWeight: "600",
+          mb: "1vmin",
+          whiteSpace: "pre-line",
+        }}
+      >
+        {loket.loket_description}
+      </Typography>
+
       {/* Nomor besar */}
       <Typography
         sx={{
