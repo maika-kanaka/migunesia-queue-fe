@@ -3,6 +3,7 @@ import { apiGet } from "../api";
 import speakQueue from "../utils/speak";
 
 export default function useLoketDisplayLed({ eventId, loketId }) {
+  const [eventInfo, setEventInfo] = useState(null);
   const [loket, setLoket] = useState(null);
   const [voiceEnabled, setVoiceEnabled] = useState(true);
 
@@ -28,9 +29,14 @@ export default function useLoketDisplayLed({ eventId, loketId }) {
   }, [eventId]);
 
   const loadInfo = useCallback(async () => {
-    if (!loketId) return;
+    if (!eventId || !loketId) return;
     try {
-      const data = await apiGet(`/lokets/${loketId}/info`);
+      const [eventData, data] = await Promise.all([
+        apiGet(`/events/${eventId}`),
+        apiGet(`/lokets/${loketId}/info`),
+      ]);
+
+      setEventInfo(eventData);
 
       const currentNumber = data.current_number || 0;
       const repeatAt = data.last_repeat_at || null;
@@ -67,7 +73,7 @@ export default function useLoketDisplayLed({ eventId, loketId }) {
     } catch (err) {
       console.error(err);
     }
-  }, [loketId, voiceEnabled]);
+  }, [eventId, loketId, voiceEnabled]);
 
   useEffect(() => {
     if (!loketId) return;
@@ -83,6 +89,7 @@ export default function useLoketDisplayLed({ eventId, loketId }) {
   }, [loadInfo, loketId]);
 
   return {
+    eventInfo,
     loket,
   };
 }
